@@ -1,34 +1,54 @@
 <?php
 
-use App\Livewire\CajaManager;
-use App\Livewire\ClientesManager;
-use App\Livewire\CobradorDashboard;
-use App\Livewire\CobrosCreate;
-use App\Livewire\LegajoCliente;
-use App\Livewire\VehiculosManager;
-use App\Livewire\VentasManager;
+use App\Livewire\CRM\Index as CRMIndex;
+use App\Livewire\CRM\CreateEdit as CRMCreateEdit;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make something great!
+|
+*/
+
+// Removed welcome view
 
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    // La ruta principal será POS (Caja)
+    Route::get('/', \App\Livewire\POS\Index::class)->name('dashboard'); // Se deja el nombre 'dashboard' por conveniencia con el menú y autenticaciones
 
-    Route::get('/vehiculos', VehiculosManager::class)->name('vehiculos.index');
-    Route::get('/clientes', ClientesManager::class)->name('clientes.index');
-    Route::get('/ventas', VentasManager::class)->name('ventas.index');
-    Route::get('/clientes/{id}/legajo', LegajoCliente::class)->name('clientes.legajo');
+    // CRM Bounded Context Routes
+    Route::prefix('crm')->name('crm.')->group(function () {
+        Route::get('/', CRMIndex::class)->name('index');
+        Route::get('/create', CRMCreateEdit::class)->name('create');
+        Route::get('/{id}/edit', CRMCreateEdit::class)->name('edit');
+        Route::get('/{id}/perfil', \App\Livewire\CRM\Show::class)->name('show');
+    });
 
-    Route::get('/caja', CajaManager::class)->name('caja.index');
-    Route::get('/cobros/nuevo', CobrosCreate::class)->name('cobros.create');
+    // Ventas (Sales) Context
+    Route::prefix('ventas')->name('ventas.')->group(function () {
+        Route::get('/', \App\Livewire\Ventas\Index::class)->name('index');
+        Route::get('/nueva', \App\Livewire\Ventas\Create::class)->name('create');
+    });
 
-    Route::get('/cobrar-hoy', CobradorDashboard::class)->name('cobrador.index');
+    // POS Bounded Context Routes
+    Route::prefix('pos')->name('pos.')->group(function () {
+        Route::get('/caja', \App\Livewire\POS\Index::class)->name('index');
+    });
+
+    // Vehicles Bounded Context Routes
+    Route::prefix('vehicles')->name('vehicles.')->group(function () {
+        Route::get('/', \App\Livewire\Vehicles\Index::class)->name('index');
+        Route::get('/create', \App\Livewire\Vehicles\CreateEdit::class)->name('create');
+        Route::get('/{id}/edit', \App\Livewire\Vehicles\CreateEdit::class)->name('edit');
+        Route::get('/{id}/perfil', \App\Livewire\Vehicles\Show::class)->name('show');
+    });
 });

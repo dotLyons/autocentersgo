@@ -12,7 +12,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->register(\App\Src\CRM\Providers\CRMServiceProvider::class);
+        $this->app->register(\App\Src\POS\Providers\POSServiceProvider::class);
+        $this->app->register(\App\Src\Vehicles\Providers\VehiclesServiceProvider::class);
     }
 
     /**

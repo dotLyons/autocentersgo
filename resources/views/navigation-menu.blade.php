@@ -12,28 +12,21 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
 
-                    <x-nav-link href="{{ route('vehiculos.index') }}" :active="request()->routeIs('vehiculos.index')">
+                    <x-nav-link href="{{ route('vehicles.index') }}" :active="request()->routeIs('vehicles.*')">
                         {{ __('Vehículos') }}
                     </x-nav-link>
 
-                    <x-nav-link href="{{ route('clientes.index') }}" :active="request()->routeIs('clientes.index')">
-                        {{ __('Clientes') }}
+                    <x-nav-link href="{{ route('crm.index') }}" :active="request()->routeIs('crm.*')">
+                        {{ __('Clientes (CRM)') }}
                     </x-nav-link>
 
-                    <x-nav-link href="{{ route('ventas.index') }}" :active="request()->routeIs('ventas.index')">
+                    <x-nav-link href="{{ route('ventas.index') }}" :active="request()->routeIs('ventas.*')">
                         {{ __('Ventas') }}
                     </x-nav-link>
 
-                    <x-nav-link href="{{ route('caja.index') }}" :active="request()->routeIs('caja.*') || request()->routeIs('cobros.*')">
-                        {{ __('Caja') }}
-                    </x-nav-link>
-
-                    <x-nav-link href="{{ route('cobrador.index') }}" :active="request()->routeIs('cobrador.index')">
-                        {{ __('Cobrar Hoy') }}
+                    <x-nav-link href="{{ route('pos.index') }}" :active="request()->routeIs('pos.*')">
+                        {{ __('Caja (POS)') }}
                     </x-nav-link>
                 </div>
             </div>
@@ -170,28 +163,22 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{ 'block': open, 'hidden': !open }" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
 
-            <x-responsive-nav-link href="{{ route('vehiculos.index') }}" :active="request()->routeIs('vehiculos.index')">
+
+            <x-responsive-nav-link href="{{ route('vehicles.index') }}" :active="request()->routeIs('vehicles.*')">
                 {{ __('Vehículos') }}
             </x-responsive-nav-link>
 
-            <x-responsive-nav-link href="{{ route('clientes.index') }}" :active="request()->routeIs('clientes.index')">
-                {{ __('Clientes') }}
+            <x-responsive-nav-link href="{{ route('crm.index') }}" :active="request()->routeIs('crm.*')">
+                {{ __('Clientes (CRM)') }}
             </x-responsive-nav-link>
 
-            <x-responsive-nav-link href="{{ route('ventas.index') }}" :active="request()->routeIs('ventas.index')">
+            <x-responsive-nav-link href="{{ route('ventas.index') }}" :active="request()->routeIs('ventas.*')">
                 {{ __('Ventas') }}
             </x-responsive-nav-link>
 
-            <x-responsive-nav-link href="{{ route('caja.index') }}" :active="request()->routeIs('caja.*') || request()->routeIs('cobros.*')">
-                {{ __('Caja') }}
-            </x-responsive-nav-link>
-
-            <x-responsive-nav-link href="{{ route('cobrador.index') }}" :active="request()->routeIs('cobrador.index')">
-                {{ __('Cobrar Hoy') }}
+            <x-responsive-nav-link href="{{ route('pos.index') }}" :active="request()->routeIs('pos.*')">
+                {{ __('Caja (POS)') }}
             </x-responsive-nav-link>
         </div>
 
