@@ -23,7 +23,7 @@ class Vehiculo extends Model
         'color',
         'tipo_vehiculo',
         'codigo_motor', // For multiple types (motor / motor version)
-        'codigo_chasis_o_marco', // Chasis for auto/pickup/furgon, Marco for moto
+        'codigo_chasis_o_marco', // Chassis for auto/pickup/furgon, Marco for moto
         'puertas',
         'tipo_caja',
         'version',
@@ -35,6 +35,7 @@ class Vehiculo extends Model
         'precio_venta_publico', // For stock
         'precio_venta_consignacion', // Agregado para vendedor
         'ganancia_concesionaria', // Agregado para vendedor
+        'monto_entrega_requerido', // Minimum delivery required
         'disponible',
     ];
 
@@ -46,6 +47,7 @@ class Vehiculo extends Model
         'precio_venta_publico' => 'decimal:2',
         'precio_venta_consignacion' => 'decimal:2',
         'ganancia_concesionaria' => 'decimal:2',
+        'monto_entrega_requerido' => 'decimal:2',
         'disponible' => 'boolean',
     ];
 

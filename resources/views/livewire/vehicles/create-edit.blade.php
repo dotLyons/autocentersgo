@@ -76,11 +76,7 @@
                             @error('anio') <span class="text-sm text-red-600 mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Precio Venta Público ($)</label>
-                            <input type="number" wire:model="precio_venta_publico" class="mt-1 flex-1 block w-full rounded-md sm:text-sm border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
-                            @error('precio_venta_publico') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                        </div>
+                        <!-- Precio Venta Público movido al Bloque 4 (Tasador) -->
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Monto de Entrega Requerido / Inicial ($)</label>
@@ -99,11 +95,7 @@
                             <input type="text" wire:model="color" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                             @error('color') <span class="text-sm text-red-600 mt-1">{{ $message }}</span> @enderror
                         </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700">Versión General</label>
-                            <input type="text" wire:model="version" placeholder="Ej: 2.8 TDI 4x4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                            @error('version') <span class="text-sm text-red-600 mt-1">{{ $message }}</span> @enderror
-                        </div>
+                        <!-- Versión General movida al Bloque 4 (tasador) -->
                     </div>
 
                     {{-- 3. DETALLE TÉCNICO --}}
@@ -168,13 +160,13 @@
                                 @error('precio_venta_consignacion') <span class="text-sm text-red-600 mt-1">{{ $message }}</span> @enderror
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Precio de Venta Público ($)</label>
-                                <input type="number" step="0.01" wire:model.live="precio_venta_publico" wire:change="autoCalcularGanancia" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm text-right font-bold text-green-700">
+                                <label class="block text-sm font-medium text-gray-700">Precio al Público ($)</label>
+                                <input type="number" step="0.01" wire:model.live="precio_venta_publico" wire:change="autoCalcularGanancia" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm text-right font-bold">
                                 @error('precio_venta_publico') <span class="text-sm text-red-600 mt-1">{{ $message }}</span> @enderror
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Ganancia Concesionaria ($)</label>
-                                <input type="number" step="0.01" wire:model="ganancia_concesionaria" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-200 cursor-not-allowed shadow-inner sm:text-sm text-right font-bold" readonly placeholder="Calculado Autom.">
+                                <input type="number" step="0.01" wire:model="ganancia_concesionaria" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-200 cursor-not-allowed shadow-inner sm:text-sm text-right" readonly placeholder="Calculado Autom.">
                             </div>
                         @else
                             <div class="md:col-span-3">

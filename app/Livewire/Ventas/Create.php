@@ -12,10 +12,15 @@ use Livewire\Component;
 
 class Create extends Component
 {
-    // Search properties for dynamically loading options
     public $searchCliente = '';
     public $searchVehiculo = '';
     public $searchVehiculoEntregado = '';
+    public $showClienteSelector = false;
+
+    protected $listeners = [
+        'cliente-seleccionado' => 'seleccionarCliente',
+        'vehiculo-seleccionado' => 'seleccionarVehiculoComprado',
+    ];
 
     // Selected Entities
     public $cliente_id = null;
@@ -34,6 +39,7 @@ class Create extends Component
     public $financiacion_banco = 0;
     public $financiacion_casa = 0;
     public $cant_cuotas_casa = 0;
+    public $monto_cuota_casa = 0;
 
     public $retirado_ahora = false;
     public $transferencia_a_cargo_comprador = false;
@@ -43,6 +49,46 @@ class Create extends Component
     {
         $this->cliente_id = $id;
         $this->searchCliente = '';
+        $this->showClienteSelector = false;
+    }
+
+    public function openClienteSelector()
+    {
+        $this->dispatch('open-cliente-selector');
+    }
+
+    public function closeClienteSelector()
+    {
+        $this->dispatch('close-cliente-selector');
+    }
+
+    public function openVehiculoSelector()
+    {
+        $this->dispatch('open-vehiculo-selector');
+    }
+
+    public function closeVehiculoSelector()
+    {
+        $this->dispatch('close-vehiculo-selector');
+    }
+
+    public function updatedFinanciacionCasa($value)
+    {
+        $this->actualizarMontoCuota();
+    }
+
+    public function updatedCantCuotasCasa($value)
+    {
+        $this->actualizarMontoCuota();
+    }
+
+    public function actualizarMontoCuota()
+    {
+        if ((float)$this->financiacion_casa > 0 && (int)$this->cant_cuotas_casa > 0) {
+            $this->monto_cuota_casa = round((float)$this->financiacion_casa / (int)$this->cant_cuotas_casa, 2);
+        } else {
+            $this->monto_cuota_casa = 0;
+        }
     }
 
     public function seleccionarVehiculoComprado($id)
@@ -72,18 +118,14 @@ class Create extends Component
 
     public function getTotalAportadoProperty()
     {
-        return (float)$this->monto_efectivo + 
+        $aportesIniciales = (float)$this->monto_efectivo + 
                (float)$this->monto_transferencia + 
                (float)$this->monto_entrega + 
                (float)$this->valor_vehiculo_entregado;
                
-        // The remaining amount after Upfront items is what can be financed.
         $totalAportado = $aportesIniciales +
                (float)$this->financiacion_banco + 
                (float)$this->financiacion_casa;
-               
-        // Additionally, if there is a pending upfront payment, it is also a form of financing / "aportado" to total closing price
-        $totalAportado += $this->getSaldoEntregaPendienteProperty();
         
         return $totalAportado;
     }
@@ -98,9 +140,7 @@ class Create extends Component
 
     public function getSaldoEntregaPendienteProperty()
     {
-        $aportes = $this->getAportesInicialesProperty();
-        $faltante = (float)$this->monto_entrega_requerido - $aportes;
-        return $faltante > 0 ? $faltante : 0;
+        return $this->getDiferenciaProperty() > 0 ? $this->getDiferenciaProperty() : 0;
     }
 
     public function getDiferenciaProperty()
@@ -119,15 +159,18 @@ class Create extends Component
             'valor_vehiculo_entregado' => 'nullable|numeric|min:0',
             'financiacion_casa' => 'nullable|numeric|min:0',
             'cant_cuotas_casa' => 'nullable|integer|min:0',
+            'monto_cuota_casa' => 'nullable|numeric|min:0',
         ]);
-
-        if (round($this->getDiferenciaProperty(), 2) !== 0.0) {
-            session()->flash('error', 'El total aportado/financiado debe ser exactamente igual al Precio de Cierre de la operación. Diferencia actual: $ ' . round($this->getDiferenciaProperty(), 2));
-            return;
-        }
 
         if ($this->financiacion_casa > 0 && $this->cant_cuotas_casa <= 0) {
             session()->flash('error', 'Si hay financiación propia (De la Casa), debes indicar la cantidad de cuotas (mínimo 1).');
+            return;
+        }
+
+        // Validar que se cumpla al menos la entrega mínima requerida
+        $aportesIniciales = $this->getAportesInicialesProperty();
+        if ($aportesIniciales < $this->monto_entrega_requerido) {
+            session()->flash('error', 'El monto de entrega inicial debe ser al menos: $ ' . number_format($this->monto_entrega_requerido, 2));
             return;
         }
 
@@ -142,7 +185,7 @@ class Create extends Component
         );
 
         // Execute action
-        $action->execute([
+        $legajoVehiculo = $action->execute([
             'legajo_id' => $legajo->id,
             'vehiculo_comprado_id' => $this->vehiculo_comprado_id,
             'precio_compra' => $this->precio_compra,
@@ -155,6 +198,7 @@ class Create extends Component
             'financiacion_banco' => $this->financiacion_banco,
             'financiacion_casa' => $this->financiacion_casa,
             'cant_cuotas_casa' => $this->cant_cuotas_casa,
+            'monto_cuota_casa' => $this->monto_cuota_casa,
             'retirado_ahora' => $this->retirado_ahora,
             'transferencia_a_cargo_comprador' => $this->transferencia_a_cargo_comprador,
             'costo_transferencia' => $this->costo_transferencia,
@@ -165,7 +209,11 @@ class Create extends Component
         ]);
 
         session()->flash('message', 'Operación de Venta registrada con éxito.');
-        return $this->redirectRoute('ventas.index', navigate: true);
+        // Instead of directly going to index, redirect to the receipt printing page, which then goes back to index or stays.
+        // Actually, we can dispatch an event to open a new tab, or just redirect with a session flash to trigger it in the UI.
+        // For simplicity now, let's just keep it going to the index, but provide the vehicle/legajo ID so we can print it.
+        // A better approach: redirect to the print route. It's safe since it's an invoice.
+        return redirect()->route('ventas.resumen', $legajoVehiculo->id);
     }
 
     public function render()

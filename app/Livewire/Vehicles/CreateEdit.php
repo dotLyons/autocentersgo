@@ -95,8 +95,10 @@ class CreateEdit extends Component
     public function autoCalcularGanancia()
     {
         // Pequeño helper para el frontend
-        if($this->precio_venta_publico > 0 && $this->precio_venta_consignacion > 0) {
-            $this->ganancia_concesionaria = $this->precio_venta_publico - $this->precio_venta_consignacion;
+        if($this->precio_venta_publico !== '' && $this->precio_venta_consignacion !== '') {
+            $this->ganancia_concesionaria = floatval($this->precio_venta_publico) - floatval($this->precio_venta_consignacion);
+        } else {
+            $this->ganancia_concesionaria = null;
         }
     }
 

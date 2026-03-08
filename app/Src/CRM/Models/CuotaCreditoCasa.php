@@ -16,6 +16,7 @@ class CuotaCreditoCasa extends Model
         'legajo_vehiculo_id',
         'numero_cuota',
         'monto',
+        'interes_mora',
         'fecha_vencimiento',
         'pagada',
         'fecha_pago',
@@ -27,6 +28,7 @@ class CuotaCreditoCasa extends Model
     protected $casts = [
         'numero_cuota' => 'integer',
         'monto' => 'decimal:2',
+        'interes_mora' => 'decimal:2',
         'fecha_vencimiento' => 'date',
         'pagada' => 'boolean',
         'fecha_pago' => 'date',

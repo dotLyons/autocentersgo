@@ -25,6 +25,10 @@
                         {{ __('Ventas') }}
                     </x-nav-link>
 
+                    <x-nav-link href="{{ route('cobrador.index') }}" :active="request()->routeIs('cobrador.*')">
+                        {{ __('Cobranzas') }}
+                    </x-nav-link>
+
                     <x-nav-link href="{{ route('pos.index') }}" :active="request()->routeIs('pos.*')">
                         {{ __('Caja (POS)') }}
                     </x-nav-link>
@@ -175,6 +179,10 @@
 
             <x-responsive-nav-link href="{{ route('ventas.index') }}" :active="request()->routeIs('ventas.*')">
                 {{ __('Ventas') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link href="{{ route('cobrador.index') }}" :active="request()->routeIs('cobrador.*')">
+                {{ __('Cobranzas') }}
             </x-responsive-nav-link>
 
             <x-responsive-nav-link href="{{ route('pos.index') }}" :active="request()->routeIs('pos.*')">

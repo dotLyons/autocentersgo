@@ -31,27 +31,32 @@ class CobrarCuotaCreditoCasaAction
             }
 
             $montoAbonado = $data['monto_pagado'] ?? $cuota->monto;
+            $interesMora = $data['interes_mora'] ?? 0;
+            $marcarComoPagada = $data['es_pagada_total'] ?? true;
 
             // Actualizar estado de cuota
             $cuota->update([
-                'pagada' => true, // Para este escenario simple asumimos que el pago cancela el mes
+                'pagada' => $marcarComoPagada,
                 'fecha_pago' => Carbon::now(),
-                'monto_pagado' => $montoAbonado,
+                'monto_pagado' => $cuota->monto_pagado + $montoAbonado,
+                'interes_mora' => $cuota->interes_mora + $interesMora,
                 'metodo_pago' => $data['metodo_pago'],
                 'cobrado_por_id' => $data['usuario_id'],
             ]);
 
             // Actualizar el acumulado en el legajo ("cuanto va pagando")
             $legajoVehiculo = $cuota->legajoVehiculo;
-            $legajoVehiculo->increment('total_pagado_casa', $montoAbonado);
+            $legajoVehiculo->increment('total_pagado_casa', $montoAbonado); // Solo el capital amortiza deuda de capital
+            
+            $montoTotalImpactoCaja = $montoAbonado + $interesMora;
 
             // Generar el movimiento de caja
             MovimientoCaja::create([
                 'caja_id' => $data['caja_id'],
                 'tipo_movimiento' => TipoMovimiento::INGRESO->value,
                 'metodo_pago' => $data['metodo_pago'],
-                'monto' => $montoAbonado,
-                'descripcion' => "Cobro de cuota nro {$cuota->numero_cuota} correspondiente al legajo de vehiculo {$legajoVehiculo->id}",
+                'monto' => $montoTotalImpactoCaja,
+                'descripcion' => "Cobro de cuota nro {$cuota->numero_cuota} correspondiente al legajo de vehiculo {$legajoVehiculo->id}" . ($interesMora > 0 ? " (Incluye \$" . number_format($interesMora, 2) . " de interés)" : ""),
             ]);
 
             return $cuota;

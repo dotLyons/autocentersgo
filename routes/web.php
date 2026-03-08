@@ -37,7 +37,12 @@ Route::middleware([
     Route::prefix('ventas')->name('ventas.')->group(function () {
         Route::get('/', \App\Livewire\Ventas\Index::class)->name('index');
         Route::get('/nueva', \App\Livewire\Ventas\Create::class)->name('create');
+        Route::get('/{legajoVehiculoId}/resumen', [\App\Http\Controllers\ReceiptController::class, 'ventaResumen'])->name('resumen');
     });
+
+    // Cobranzas (Payments / Collection) Context
+    Route::get('/cobrador', \App\Livewire\Cobrador::class)->name('cobrador.index');
+    Route::get('/cobrador/recibo/{cuota}', [\App\Http\Controllers\ReceiptController::class, 'cobranza'])->name('cobrador.imprimir_recibo');
 
     // POS Bounded Context Routes
     Route::prefix('pos')->name('pos.')->group(function () {

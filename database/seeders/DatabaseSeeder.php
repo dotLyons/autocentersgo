@@ -35,5 +35,12 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
             // 'role' => 'collector',
         ]);
+
+        // 2. EJECUTAR SEEDERS DE BOUNDED CONTEXTS
+        $this->call([
+            VehiclesContextSeeder::class,
+            CrmContextSeeder::class,
+            PosContextSeeder::class,
+        ]);
     }
 }

@@ -48,10 +48,12 @@ class RegistrarCompraVehiculoAction
             // 1. Calculate the values
             $financiacionCasa = $data['financiacion_casa'] ?? 0;
             $cantCuotasCasa = $data['cant_cuotas_casa'] ?? 0;
-            $montoCuotaCasa = 0;
+            $montoCuotaCasa = $data['monto_cuota_casa'] ?? 0;
 
             if ($financiacionCasa > 0 && $cantCuotasCasa > 0) {
-                $montoCuotaCasa = $financiacionCasa / $cantCuotasCasa;
+                if ($montoCuotaCasa <= 0) {
+                    $montoCuotaCasa = $financiacionCasa / $cantCuotasCasa;
+                }
             }
 
             // 2. Insert LegajoVehiculo record for the buyer

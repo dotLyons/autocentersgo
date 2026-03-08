@@ -12,7 +12,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
-            
+
             @if (session()->has('message'))
                 <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 3000)" x-show="show"
                     class="bg-green-100 border-t-4 border-green-500 rounded-b text-green-900 px-4 py-3 shadow-md mb-4">
@@ -22,9 +22,9 @@
 
             {{-- Panel Superior de Información General --}}
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg flex flex-col md:flex-row relative">
-                
+
                 <div class="w-full md:w-2 {{ $vehiculo->categoria_propiedad->value === 'propio' ? 'bg-green-500' : 'bg-purple-500' }}"></div>
-                
+
                 <div class="p-6 md:p-8 flex-1 flex flex-col md:flex-row justify-between items-start md:items-center">
                     <div>
                         <div class="flex space-x-2 mb-2">
@@ -49,10 +49,10 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
+
                 {{-- Columna Izquierda: Datos Técnicos y Financieros --}}
                 <div class="space-y-8 lg:col-span-1">
-                    
+
                     {{-- Ficha Técnica --}}
                     <div class="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
                         <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
@@ -121,7 +121,7 @@
                                         <span class="text-gray-500">Diferencia (Agencia)</span>
                                         <span class="text-indigo-600 font-bold">$ {{ number_format($vehiculo->ganancia_concesionaria, 2) }}</span>
                                     </div>
-                                    
+
                                     @if($vendedor)
                                         <div class="mt-4 p-3 bg-purple-50 border border-purple-200 rounded text-sm text-purple-800">
                                             <p class="text-xs uppercase font-bold text-purple-600 mb-1"><i class="fas fa-user-circle mr-1"></i> Vendedor / Titular Asignado</p>
@@ -141,7 +141,7 @@
 
                 {{-- Columna Derecha: Mantenimientos y Formularios --}}
                 <div class="space-y-6 lg:col-span-2">
-                    
+
                     {{-- Panel Mantenimientos/Taller --}}
                     <div class="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
                         <div class="px-5 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
@@ -205,7 +205,13 @@
                                                         <i class="fas fa-file-invoice text-indigo-400 text-xl mr-3"></i>
                                                         <div>
                                                             <div class="text-sm font-bold text-gray-900 uppercase">{{ str_replace('_', ' ', $form->tipo_formulario->value) }}</div>
-                                                            <div class="text-xs text-gray-500">Presentado el: {{ $form->fecha_presentacion->format('d/m/Y') }}</div>
+                                                            <div class="text-xs text-gray-500">
+                                                                @if($form->fecha_presentacion)
+                                                                    Presentado el: {{ $form->fecha_presentacion->format('d/m/Y') }}
+                                                                @else
+                                                                    <span class="italic text-gray-400">Fecha pendiente</span>
+                                                                @endif
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -252,12 +258,12 @@
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 transition-opacity"><div class="absolute inset-0 bg-gray-500 opacity-75"></div></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen"></span>
-            
+
             <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl w-full">
                 <form wire:submit.prevent="guardarMantenimiento">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <h3 class="text-lg leading-6 font-medium text-gray-900 border-b pb-2 mb-4">Loguear Gasto de Acondicionamiento</h3>
-                        
+
                         <div class="grid grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-gray-700 text-sm font-bold mb-2">Tipo:</label>
@@ -299,7 +305,7 @@
                                 @error('mant_fecha') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                         </div>
-                        
+
                         <div class="mb-2">
                             <label class="block text-gray-700 text-sm font-bold mb-2">Persona que lo llevó:</label>
                             <input type="text" wire:model="mant_responsable" class="w-full border-gray-300 shadow-sm rounded focus:ring-indigo-500 sm:text-sm">
@@ -322,12 +328,12 @@
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 transition-opacity"><div class="absolute inset-0 bg-gray-500 opacity-75"></div></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen"></span>
-            
+
             <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
                 <form wire:submit.prevent="guardarFormulario">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <h3 class="text-lg leading-6 font-medium text-gray-900 border-b pb-2 mb-4">Adjuntar o Notificar Formulario Legal</h3>
-                        
+
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2">Seleccione el Tipo de Documento:</label>
                             <select wire:model="form_tipo" class="w-full border-gray-300 shadow-sm rounded focus:ring-indigo-500 sm:text-sm">

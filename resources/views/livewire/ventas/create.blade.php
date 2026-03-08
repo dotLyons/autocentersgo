@@ -34,16 +34,12 @@
                         <div class="bg-gray-50 p-4 rounded-lg border border-dashed border-gray-300">
                             <label class="block text-gray-700 font-bold mb-2">1. Seleccionar Cliente (Comprador)</label>
                             @if(!$clienteSeleccionado)
-                                <input type="text" wire:model.live.debounce.300ms="searchCliente" class="w-full border-gray-300 shadow-sm rounded focus:ring-indigo-500" placeholder="Escriba DNI o Apellido para buscar...">
-                                @if(count($clientesList) > 0)
-                                    <ul class="bg-white border text-sm rounded mt-1 shadow-lg absolute z-10 w-full max-w-sm">
-                                        @foreach($clientesList as $c)
-                                            <li wire:click="seleccionarCliente({{ $c->id }})" class="p-2 border-b cursor-pointer hover:bg-indigo-50 hover:text-indigo-700 transition">
-                                                <strong>{{ $c->apellido }}, {{ $c->nombre }}</strong> (DNI: {{ $c->dni }})
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                @endif
+                                <button type="button" wire:click="openClienteSelector" class="w-full bg-white border-2 border-dashed border-gray-300 rounded-lg p-4 text-left hover:border-indigo-500 hover:bg-indigo-50 transition">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-gray-500"><i class="fas fa-search mr-2"></i>Buscar cliente...</span>
+                                        <span class="text-indigo-600 font-medium">Click para abrir</span>
+                                    </div>
+                                </button>
                                 <p class="text-xs text-gray-500 mt-2">¿No existe? <a href="{{ route('crm.create') }}" target="_blank" class="text-indigo-600 underline">Cárgalo en el CRM primero</a>.</p>
                             @else
                                 <div class="bg-indigo-100 text-indigo-800 p-3 rounded flex justify-between items-center shadow-sm">
@@ -61,17 +57,12 @@
                         <div class="bg-gray-50 p-4 rounded-lg border border-dashed border-gray-300 relative">
                             <label class="block text-gray-700 font-bold mb-2">2. Seleccionar Vehículo a Vender</label>
                             @if(!$vehiculoCompradoSeleccionado)
-                                <input type="text" wire:model.live.debounce.300ms="searchVehiculo" class="w-full border-gray-300 shadow-sm rounded focus:ring-green-500" placeholder="Escriba Patente o Modelo...">
-                                @if(count($vehiculosVenta) > 0)
-                                    <ul class="bg-white border text-sm rounded mt-1 shadow-lg absolute z-10 w-full max-w-sm">
-                                        @foreach($vehiculosVenta as $v)
-                                            <li wire:click="seleccionarVehiculoComprado({{ $v->id }})" class="p-2 border-b cursor-pointer hover:bg-green-50 hover:text-green-700 transition">
-                                                <span class="font-mono bg-gray-100 px-1 rounded mr-2">{{ $v->patente }}</span>
-                                                <strong>{{ $v->marca }} {{ $v->modelo }}</strong>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                @endif
+                                <button type="button" wire:click="openVehiculoSelector" class="w-full bg-white border-2 border-dashed border-gray-300 rounded-lg p-4 text-left hover:border-green-500 hover:bg-green-50 transition">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-gray-500"><i class="fas fa-search mr-2"></i>Buscar vehículo...</span>
+                                        <span class="text-green-600 font-medium">Click para abrir</span>
+                                    </div>
+                                </button>
                             @else
                                 <div class="bg-green-100 text-green-800 p-3 rounded flex justify-between items-center shadow-sm border border-green-200">
                                     <div>
@@ -145,21 +136,28 @@
                                             <input type="number" step="0.01" wire:model.live="financiacion_banco" class="w-full border-blue-300 rounded focus:ring-blue-500 bg-white">
                                         </div>
                                         
-                                        <div class="bg-indigo-50 p-4 border border-indigo-200 rounded shadow-inner">
+                                        <div class="bg-indigo-50 p-4 border border-indigo-200 rounded shadow-inner relative">
                                             <label class="block text-sm font-bold text-indigo-900 mb-1">Crédito Proporcionado por DE LA CASA ($)</label>
-                                            <input type="number" step="0.01" wire:model.live="financiacion_casa" class="w-full border-indigo-300 rounded focus:ring-indigo-500 mb-3 bg-white">
+                                            <div class="flex items-center space-x-2 mb-3">
+                                                <input type="number" step="0.01" wire:model.live="financiacion_casa" class="w-full border-indigo-300 rounded focus:ring-indigo-500 bg-white">
+                                                @if($this->diferencia > 0 && $this->financiacion_casa == 0)
+                                                    <button type="button" wire:click="$set('financiacion_casa', {{ $this->diferencia }})" class="whitespace-nowrap bg-indigo-600 text-white px-3 py-2 rounded text-xs font-bold hover:bg-indigo-700 shadow-sm transition">
+                                                        <i class="fas fa-magic"></i> Auto Financiar
+                                                    </button>
+                                                @endif
+                                            </div>
                                             
-                                            <label class="block text-xs font-bold text-indigo-700 mb-1">Cantidad de Cuotas Fijas:</label>
-                                            <select wire:model.live="cant_cuotas_casa" class="w-full border-indigo-300 rounded focus:ring-indigo-500 bg-white text-sm">
-                                                <option value="0">Sin Financiación</option>
-                                                <option value="3">3 Cuotas</option>
-                                                <option value="6">6 Cuotas</option>
-                                                <option value="12">12 Cuotas</option>
-                                                <option value="18">18 Cuotas</option>
-                                                <option value="24">24 Cuotas</option>
-                                                <option value="36">36 Cuotas</option>
-                                                <option value="48">48 Cuotas</option>
-                                            </select>
+                                            <div class="grid grid-cols-2 gap-4 mt-2 border-t border-indigo-200 pt-3">
+                                                <div>
+                                                    <label class="block text-xs font-bold text-indigo-700 mb-1" title="Del 1 al 48">Cant. Cuotas (1-48):</label>
+                                                    <input type="number" wire:model.live="cant_cuotas_casa" min="0" max="48" class="w-full border-indigo-300 rounded focus:ring-indigo-500 bg-white text-sm" placeholder="Ej: 12">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-bold text-indigo-700 mb-1">Monto de la Cuota ($):</label>
+                                                    <input type="number" wire:model.live="monto_cuota_casa" step="0.01" class="w-full border-indigo-300 rounded focus:ring-indigo-500 bg-white text-sm font-bold text-indigo-900" placeholder="0.00">
+                                                </div>
+                                            </div>
+                                            <div class="text-[10px] text-gray-500 mt-2">Puede modificar manualmente el monto de la cuota si incluye interés u otros gastos en la financiación.</div>
                                         </div>
                                     </div>
                                 </div>
@@ -210,17 +208,26 @@
 
                                     @php
                                         $diferencia = $this->diferencia;
+                                        $cumpleEntregaMinima = $this->aportes_iniciales >= $this->monto_entrega_requerido;
                                     @endphp
 
-                                    <div class="mt-6 p-4 rounded-lg {{ $diferencia == 0 ? 'bg-green-800 border border-green-600' : 'bg-red-900 border border-red-700' }}">
-                                        <div class="text-xs uppercase tracking-widest font-bold mb-1 {{ $diferencia == 0 ? 'text-green-300' : 'text-red-300' }}">
-                                            Evaluación de Balance
+                                    <div class="mt-6 p-4 rounded-lg {{ $cumpleEntregaMinima ? 'bg-green-800 border border-green-600' : 'bg-yellow-800 border border-yellow-600' }}">
+                                        <div class="text-xs uppercase tracking-widest font-bold mb-1 {{ $cumpleEntregaMinima ? 'text-green-300' : 'text-yellow-300' }}">
+                                            Estado de la Operación
                                         </div>
-                                        <div class="text-2xl font-bold">
-                                            @if($diferencia == 0)
-                                                <i class="fas fa-check-circle mr-1"></i> Balance Exacto
+                                        <div class="text-lg font-bold">
+                                            @if($cumpleEntregaMinima)
+                                                <i class="fas fa-check-circle mr-1"></i> Entrega Mínima CUMPLIDA
+                                                @if($diferencia > 0)
+                                                    <div class="text-sm font-normal mt-1 text-yellow-200">
+                                                        <i class="fas fa-clock mr-1"></i> Saldo Pendiente: $ {{ number_format($diferencia, 2) }}
+                                                    </div>
+                                                @endif
                                             @else
-                                                Faltan/Sobran: <br>$ {{ number_format($diferencia, 2) }}
+                                                <i class="fas fa-exclamation-triangle mr-1"></i> Falta Entrega Mínima
+                                                <div class="text-sm font-normal mt-1">
+                                                    Debe entregar al menos: $ {{ number_format($this->monto_entrega_requerido, 2) }}
+                                                </div>
                                             @endif
                                         </div>
                                     </div>
@@ -228,8 +235,8 @@
 
                                 <div class="mt-8 relative z-10">
                                     <button type="submit" 
-                                            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-bold text-white relative transition {{ $diferencia == 0 && $this->cliente_id && $this->vehiculo_comprado_id ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-gray-600 cursor-not-allowed border-dashed border-2 opacity-70' }}"
-                                            @if($diferencia != 0 || !$this->cliente_id || !$this->vehiculo_comprado_id) disabled @endif>
+                                            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-bold text-white relative transition {{ $this->cliente_id && $this->vehiculo_comprado_id ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-gray-600 cursor-not-allowed border-dashed border-2 opacity-70' }}"
+                                            @if(!$this->cliente_id || !$this->vehiculo_comprado_id) disabled @endif>
                                             <i class="fas fa-signature mr-2 mt-1"></i> EFECTUAR VENTA
                                     </button>
                                 </div>
@@ -239,6 +246,9 @@
                 </div>
 
             </form>
+            
+            @livewire(\App\Livewire\Shared\ClienteSelector::class)
+            @livewire(\App\Livewire\Shared\VehiculoSelector::class)
         </div>
     </div>
 </div>

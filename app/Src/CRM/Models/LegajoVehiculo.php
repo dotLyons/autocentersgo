@@ -81,6 +81,11 @@ class LegajoVehiculo extends Model
         return $this->hasMany(CuotaCreditoCasa::class);
     }
 
+    public function cuotasCasa(): HasMany
+    {
+        return $this->hasMany(CuotaCreditoCasa::class);
+    }
+
     public function pagosEntrega(): HasMany
     {
         return $this->hasMany(PagoEntrega::class);
