@@ -77,6 +77,7 @@ class RegistrarCompraVehiculoAction
                 'total_pagado_casa' => 0,
 
                 'retirado_ahora' => $data['retirado_ahora'] ?? false,
+                'entregado' => $data['entregado'] ?? false,
                 'transferencia_a_cargo_comprador' => $data['transferencia_a_cargo_comprador'] ?? false,
                 'costo_transferencia' => ($data['transferencia_a_cargo_comprador'] ?? false) ? ($data['costo_transferencia'] ?? 0) : 0,
             ]);

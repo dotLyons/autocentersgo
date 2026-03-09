@@ -95,7 +95,11 @@
                             <input type="text" wire:model="color" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                             @error('color') <span class="text-sm text-red-600 mt-1">{{ $message }}</span> @enderror
                         </div>
-                        <!-- Versión General movida al Bloque 4 (tasador) -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Versión</label>
+                            <input type="text" wire:model="version" placeholder="Ej: 2.8 TDI 4X4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            @error('version') <span class="text-sm text-red-600 mt-1">{{ $message }}</span> @enderror
+                        </div>
                     </div>
 
                     {{-- 3. DETALLE TÉCNICO --}}
@@ -105,6 +109,11 @@
                             <label class="block text-sm font-medium text-gray-700">Cód. Motor</label>
                             <input type="text" wire:model="codigo_motor" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                             @error('codigo_motor') <span class="text-sm text-red-600 mt-1">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Versión de Motor</label>
+                            <input type="text" wire:model="version_motor" placeholder="Ej: 1.6 16v" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            @error('version_motor') <span class="text-sm text-red-600 mt-1">{{ $message }}</span> @enderror
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700">Cód. Chasis / Marco (VIN)</label>

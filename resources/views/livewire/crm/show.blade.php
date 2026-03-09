@@ -13,6 +13,21 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
 
+            {{-- Mensajes de feedback --}}
+            @if (session()->has('message'))
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 shadow rounded" role="alert">
+                    <p class="font-bold">Notificación</p>
+                    <p>{{ session('message') }}</p>
+                </div>
+            @endif
+
+            @if (session()->has('error'))
+                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 shadow rounded" role="alert">
+                    <p class="font-bold">Error</p>
+                    <p>{{ session('error') }}</p>
+                </div>
+            @endif
+
             {{-- Resumen del Cliente --}}
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 flex flex-col md:flex-row justify-between items-start md:items-center border-l-4 border-indigo-500">
                 <div>
@@ -83,9 +98,30 @@
                                         @endif
                                     </div>
 
-                                {{-- Detalle Comprador --}}
                                 @elseif($legajo->tipo_legajo->value === 'comprador')
                                     <div class="bg-white border rounded p-4">
+                                        <div class="mb-4 bg-gray-50 border rounded p-3 flex justify-between items-center text-sm shadow-sm">
+                                            <div>
+                                                <span class="font-bold text-gray-700">Estado de la Unidad: </span>
+                                                @if($LV->entregado)
+                                                    <button wire:click="toggleEntregado({{ $LV->id }})" class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold text-green-800 hover:bg-green-200 transition" title="Hacer click para desmarcar"><i class="fas fa-check-circle mr-1"></i> ENTREGADO AL CLIENTE</button>
+                                                @else
+                                                    @if($LV->saldo_entrega_pendiente <= 0)
+                                                        <button wire:click="toggleEntregado({{ $LV->id }})" class="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-bold text-yellow-800 hover:bg-yellow-200 transition shadow-sm cursor-pointer" title="Hacer click para marcar como entregado"><i class="fas fa-parking mr-1"></i> EN AGENCIA (Click aquí para Entregar)</button>
+                                                    @else
+                                                        <span class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-bold text-blue-800" title="Vehículo reservado con saldo pendiente de entrega. Cancele la deuda para poder entregarlo."><i class="fas fa-handshake mr-1"></i> RESERVADO (Abonando Saldo)</span>
+                                                    @endif
+                                                @endif
+                                            </div>
+                                            
+                                            @if($LV->transferencia_a_cargo_comprador)
+                                                <div class="text-right">
+                                                    <span class="font-bold text-gray-700 block">Trámite Transferencia Registral:</span>
+                                                    <span class="text-indigo-600 font-bold block">A cargo del Comprador ($ {{ number_format($LV->costo_transferencia, 2) }})</span>
+                                                </div>
+                                            @endif
+                                        </div>
+
                                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 border-b pb-4">
                                             <div>
                                                 <span class="block text-gray-500 text-xs uppercase tracking-wide">Precio Cierre Operación</span>

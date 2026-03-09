@@ -1,7 +1,7 @@
 <div>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Terminal de Caja (POS)') }}
+            {{ __('Terminal de Caja (POS) - DEMO') }}
         </h2>
     </x-slot>
 
@@ -37,45 +37,99 @@
             @else
                 {{-- VISTA CON CAJA ABIERTA --}}
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <!-- Resumen del Efectivo (Lo que debería haber en el cajón) -->
-                    <div class="bg-indigo-600 rounded-lg shadow-lg p-6 text-white relative overflow-hidden">
-                        <div class="absolute right-0 top-0 opacity-10 mt-4 mr-4 text-6xl"><i class="fas fa-money-bill-wave"></i></div>
-                        <h3 class="text-indigo-100 font-semibold mb-1">Caja Efectivo (Esperado)</h3>
+                    <!-- Resumen General -->
+                    <div class="md:col-span-1 bg-indigo-600 rounded-lg shadow-lg p-6 text-white relative overflow-hidden" x-data="{ verDesglose: false }">
+                        <div class="absolute right-0 top-0 opacity-10 mt-4 mr-4 text-6xl"><i class="fas fa-wallet"></i></div>
+                        <h3 class="text-indigo-100 font-semibold mb-1">Caja Total Operaciones</h3>
                         <p class="text-3xl font-bold">
                             @php
                                 $efectivoTotal = $cajaActiva->monto_apertura + ($resumen['efectivo_ingreso'] ?? 0) - ($resumen['efectivo_egreso'] ?? 0);
+                                $transferenciaTotal = ($resumen['transferencia_ingreso'] ?? 0) - ($resumen['transferencia_egreso'] ?? 0);
+                                $tarjetaTotal = ($resumen['tarjeta_ingreso'] ?? 0) - ($resumen['tarjeta_egreso'] ?? 0);
+                                $totalGeneral = $efectivoTotal + $transferenciaTotal + $tarjetaTotal;
                             @endphp
-                            $ {{ number_format($efectivoTotal, 2) }}
+                            $ {{ number_format($totalGeneral, 2) }}
                         </p>
-                        <div class="mt-4 text-xs text-indigo-200 flex justify-between">
-                            <span>Apertura: $ {{ number_format($cajaActiva->monto_apertura, 2) }}</span>
-                            <span>Apertura el: {{ $cajaActiva->fecha_apertura->format('H:i') }}hs</span>
+                        
+                        <div class="mt-4">
+                            <button @click="verDesglose = !verDesglose" class="text-xs text-white bg-indigo-700 hover:bg-indigo-800 px-3 py-1.5 rounded shadow-sm transition inline-flex items-center outline-none">
+                                <i class="fas fa-chart-pie mr-1"></i> <span x-text="verDesglose ? 'Ocultar Desglose' : 'Ver Desglose de Operaciones'"></span>
+                            </button>
+                        </div>
+
+                        <!-- Dropdown de desglose -->
+                        <div x-show="verDesglose" 
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 transform scale-95"
+                             x-transition:enter-end="opacity-100 transform scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="opacity-100 transform scale-100"
+                             x-transition:leave-end="opacity-0 transform scale-95"
+                             class="mt-4 bg-indigo-800 rounded p-4 text-sm space-y-3 shadow-inner">
+                             <div class="flex justify-between items-center border-b border-indigo-700 pb-2">
+                                 <span class="text-indigo-200"><i class="fas fa-money-bill-wave mr-1"></i> Efectivo Físico:</span>
+                                 <span class="font-bold">$ {{ number_format($efectivoTotal, 2) }}</span>
+                             </div>
+                             <div class="flex justify-between items-center border-b border-indigo-700 pb-2">
+                                 <span class="text-indigo-200"><i class="fas fa-exchange-alt mr-1"></i> Transferencias:</span>
+                                 <span class="font-bold">$ {{ number_format($transferenciaTotal, 2) }}</span>
+                             </div>
+                             <div class="flex justify-between items-center">
+                                 <span class="text-indigo-200"><i class="fas fa-credit-card mr-1"></i> Tarjetas:</span>
+                                 <span class="font-bold">$ {{ number_format($tarjetaTotal, 2) }}</span>
+                             </div>
+                        </div>
+
+                        <div class="mt-5 pt-3 border-t border-indigo-500 text-xs text-indigo-200 flex justify-between" x-show="!verDesglose">
+                            <span>Apertura base (Efectivo): $ {{ number_format($cajaActiva->monto_apertura, 2) }}</span>
+                            <span>| {{ $cajaActiva->fecha_apertura->format('H:i') }}hs</span>
                         </div>
                     </div>
 
-                    <!-- Resumen Digitales (Transferencias, Tarjetas) -->
-                    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-400">
-                        <h3 class="text-gray-500 font-semibold mb-2">Cobros Digitales</h3>
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center border-b pb-1">
-                                <span class="text-sm font-medium text-gray-600">Transferencias:</span>
-                                <span class="text-sm font-bold text-blue-600">$ {{ number_format(($resumen['transferencia_ingreso'] ?? 0) - ($resumen['transferencia_egreso'] ?? 0), 2) }}</span>
+                    <!-- Mini Dashboard de Balance y Acciones -->
+                    <div class="md:col-span-2 bg-white rounded-lg shadow flex flex-col sm:flex-row border border-gray-100 overflow-hidden">
+                        <!-- Indicadores de Flujo -->
+                        <div class="w-full sm:w-1/2 flex border-b sm:border-b-0 sm:border-r border-gray-100 bg-gray-50">
+                            @php
+                                $totalIngreso = ($resumen['efectivo_ingreso'] ?? 0) + ($resumen['transferencia_ingreso'] ?? 0) + ($resumen['tarjeta_ingreso'] ?? 0);
+                                $totalEgreso = ($resumen['efectivo_egreso'] ?? 0) + ($resumen['transferencia_egreso'] ?? 0) + ($resumen['tarjeta_egreso'] ?? 0);
+                            @endphp
+                            
+                            <!-- Ingresos -->
+                            <div class="w-1/2 p-5 text-center border-r border-gray-100 flex flex-col justify-center">
+                                <span class="text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Entradas de Hoy</span>
+                                <div class="text-2xl font-bold text-green-600 flex items-center justify-center">
+                                    <i class="fas fa-arrow-trend-up text-sm mr-2 opacity-75"></i> 
+                                    $ {{ number_format($totalIngreso, 2) }}
+                                </div>
                             </div>
-                            <div class="flex justify-between items-center pb-1">
-                                <span class="text-sm font-medium text-gray-600">Tarjetas:</span>
-                                <span class="text-sm font-bold text-blue-600">$ {{ number_format(($resumen['tarjeta_ingreso'] ?? 0) - ($resumen['tarjeta_egreso'] ?? 0), 2) }}</span>
+                            
+                            <!-- Egresos -->
+                            <div class="w-1/2 p-5 text-center flex flex-col justify-center">
+                                <span class="text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Salidas de Hoy</span>
+                                <div class="text-2xl font-bold text-red-500 flex items-center justify-center">
+                                    <i class="fas fa-arrow-trend-down text-sm mr-2 opacity-75"></i> 
+                                    $ {{ number_format($totalEgreso, 2) }}
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Botones de Acción Global -->
-                    <div class="bg-white rounded-lg shadow p-6 flex flex-col justify-center space-y-3">
-                        <button wire:click="abrirModalMovimiento" class="w-full bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 font-bold py-2 px-4 rounded transition text-center">
-                            + Registrar Movimiento
-                        </button>
-                        <button wire:click="abrirModalCerrar" class="w-full bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 font-bold py-2 px-4 rounded transition text-center">
-                            <i class="fas fa-lock mr-2"></i> Cerrar Caja
-                        </button>
+                        
+                        <!-- Botonera de Acción Rápida -->
+                        <div class="w-full sm:w-1/2 p-5 flex items-center justify-center space-x-4 bg-white">
+                            <button wire:click="abrirModalMovimiento" class="flex-1 group relative flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-600 border border-blue-100 text-blue-700 hover:text-white rounded-lg p-4 transition-all duration-200 shadow-sm hover:shadow-md">
+                                <div class="bg-blue-100 text-blue-600 group-hover:bg-blue-500 group-hover:text-white rounded-full p-2 mb-2 transition-colors">
+                                    <i class="fas fa-plus text-lg"></i>
+                                </div>
+                                <span class="text-sm font-bold text-center">Registrar <br>Movimiento</span>
+                            </button>
+                            
+                            <button wire:click="abrirModalCerrar" class="flex-1 group relative flex flex-col items-center justify-center bg-red-50 hover:bg-red-600 border border-red-100 text-red-700 hover:text-white rounded-lg p-4 transition-all duration-200 shadow-sm hover:shadow-md">
+                                <div class="bg-red-100 text-red-600 group-hover:bg-red-500 group-hover:text-white rounded-full p-2 mb-2 transition-colors">
+                                    <i class="fas fa-lock text-lg"></i>
+                                </div>
+                                <span class="text-sm font-bold text-center">Cierre Definitivo <br>de Caja</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 

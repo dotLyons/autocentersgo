@@ -161,6 +161,31 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                {{-- Condiciones y Registro --}}
+                                <div class="mt-6 border-t pt-6 border-gray-200">
+                                    <h4 class="font-bold text-gray-800 mb-4 pb-2"><i class="fas fa-clipboard-check text-indigo-500 mr-2"></i> Condiciones de la Unidad y Tareas Administrativas</h4>
+                                    <div class="grid grid-cols-1 gap-4">
+                                        <div class="bg-gray-50 border border-gray-200 shadow-sm rounded p-4">
+                                            <div class="flex items-start">
+                                                <div class="flex items-center h-5">
+                                                    <input id="transferencia_cargo_comprador" type="checkbox" wire:model.live="transferencia_a_cargo_comprador" class="h-5 w-5 text-gray-700 cursor-pointer focus:ring-gray-500 border-gray-300 rounded">
+                                                </div>
+                                                <div class="ml-2 text-sm">
+                                                    <label for="transferencia_cargo_comprador" class="font-bold text-gray-900 text-md">Trámite de Transferencia Cobrada</label>
+                                                    <p class="text-xs text-gray-500">¿El comprador pagó la transferencia registral?</p>
+                                                </div>
+                                            </div>
+                                            @if($transferencia_a_cargo_comprador)
+                                                <div class="ml-7 mt-3 pt-3 border-t border-gray-200">
+                                                    <label class="block text-xs font-bold text-gray-700 mb-1">Monto Cobrado (Agregarlo tb a "Efectivo" arriba):</label>
+                                                    <input type="number" step="0.01" wire:model.live="costo_transferencia" class="w-full border-gray-300 rounded focus:ring-gray-500 text-sm font-bold bg-white" placeholder="$ Costo del trámite">
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
                             
                             {{-- Columna Derecha: Balance General y Verificación --}}
@@ -200,9 +225,9 @@
                                             <span>$ {{ number_format((float)$this->financiacion_banco + (float)$this->financiacion_casa, 2) }}</span>
                                         </div>
                                         
-                                        <div class="flex justify-between pt-2 border-t border-gray-700 mt-2">
-                                            <span class="text-gray-400 uppercase tracking-wider font-bold">Total Calculado Cierre:</span>
-                                            <span class="font-bold text-green-400 text-lg">$ {{ number_format($this->total_aportado, 2) }}</span>
+                                        <div class="flex justify-between items-center pt-2 border-t border-gray-700 mt-2">
+                                            <span class="text-gray-400 uppercase tracking-wider font-bold text-xs">Total Calculado Cierre:</span>
+                                            <span class="font-bold text-green-400 text-base md:text-lg whitespace-nowrap">$ {{ number_format($this->total_aportado, 2) }}</span>
                                         </div>
                                     </div>
 
@@ -211,22 +236,22 @@
                                         $cumpleEntregaMinima = $this->aportes_iniciales >= $this->monto_entrega_requerido;
                                     @endphp
 
-                                    <div class="mt-6 p-4 rounded-lg {{ $cumpleEntregaMinima ? 'bg-green-800 border border-green-600' : 'bg-yellow-800 border border-yellow-600' }}">
-                                        <div class="text-xs uppercase tracking-widest font-bold mb-1 {{ $cumpleEntregaMinima ? 'text-green-300' : 'text-yellow-300' }}">
+                                    <div class="mt-6 p-4 rounded-lg {{ $cumpleEntregaMinima ? 'bg-green-800 border border-green-600' : 'bg-blue-800 border border-blue-600' }}">
+                                        <div class="text-xs uppercase tracking-widest font-bold mb-1 {{ $cumpleEntregaMinima ? 'text-green-300' : 'text-blue-300' }}">
                                             Estado de la Operación
                                         </div>
                                         <div class="text-lg font-bold">
                                             @if($cumpleEntregaMinima)
                                                 <i class="fas fa-check-circle mr-1"></i> Entrega Mínima CUMPLIDA
                                                 @if($diferencia > 0)
-                                                    <div class="text-sm font-normal mt-1 text-yellow-200">
+                                                    <div class="text-sm font-normal mt-1 text-green-200">
                                                         <i class="fas fa-clock mr-1"></i> Saldo Pendiente: $ {{ number_format($diferencia, 2) }}
                                                     </div>
                                                 @endif
                                             @else
-                                                <i class="fas fa-exclamation-triangle mr-1"></i> Falta Entrega Mínima
-                                                <div class="text-sm font-normal mt-1">
-                                                    Debe entregar al menos: $ {{ number_format($this->monto_entrega_requerido, 2) }}
+                                                <i class="fas fa-handshake mr-1"></i> RESERVA (Falta Saldo Entrega)
+                                                <div class="text-sm font-normal mt-1 text-blue-200">
+                                                    Deberá abonar por caja luego: $ {{ number_format($this->saldo_entrega_pendiente, 2) }}
                                                 </div>
                                             @endif
                                         </div>

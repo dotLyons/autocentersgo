@@ -34,7 +34,6 @@ class Create extends Component
     public $monto_entrega = 0;
     public $valor_vehiculo_entregado = 0;
     public $monto_entrega_requerido = 0;
-    public $saldo_entrega_pendiente = 0;
     
     public $financiacion_banco = 0;
     public $financiacion_casa = 0;
@@ -85,7 +84,9 @@ class Create extends Component
     public function actualizarMontoCuota()
     {
         if ((float)$this->financiacion_casa > 0 && (int)$this->cant_cuotas_casa > 0) {
-            $this->monto_cuota_casa = round((float)$this->financiacion_casa / (int)$this->cant_cuotas_casa, 2);
+            $cuota = (float)$this->financiacion_casa / (int)$this->cant_cuotas_casa;
+            // Redondear siempre para arriba al milesimo mas cercano, ejemplo: 17450.50 -> 18000
+            $this->monto_cuota_casa = ceil($cuota / 1000) * 1000;
         } else {
             $this->monto_cuota_casa = 0;
         }
@@ -140,7 +141,11 @@ class Create extends Component
 
     public function getSaldoEntregaPendienteProperty()
     {
-        return $this->getDiferenciaProperty() > 0 ? $this->getDiferenciaProperty() : 0;
+        $aportesIniciales = $this->getAportesInicialesProperty();
+        if ($aportesIniciales < $this->monto_entrega_requerido) {
+            return $this->monto_entrega_requerido - $aportesIniciales;
+        }
+        return 0;
     }
 
     public function getDiferenciaProperty()
@@ -167,12 +172,8 @@ class Create extends Component
             return;
         }
 
-        // Validar que se cumpla al menos la entrega mínima requerida
-        $aportesIniciales = $this->getAportesInicialesProperty();
-        if ($aportesIniciales < $this->monto_entrega_requerido) {
-            session()->flash('error', 'El monto de entrega inicial debe ser al menos: $ ' . number_format($this->monto_entrega_requerido, 2));
-            return;
-        }
+        // La validación estricta de entrega mínima se ha removido para permitir ventas en estado "RESERVADO"
+        // donde se paga una parte y el saldo se irá completando luego mediante "Pagos de Entrega".
 
         // Obtener la caja abierta del usuario
         $caja = Caja::where('usuario_id', auth()->id())

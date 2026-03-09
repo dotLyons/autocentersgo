@@ -19,6 +19,10 @@ class Show extends Component
     // Modals
     public $isOpenMantenimiento = false;
     public $isOpenFormulario = false;
+    public $isOpenConfirmarEntrega = false;
+
+    // Estado Contable y Ventas
+    public $legajoVenta = null;
 
     // Mantenimiento Fields
     public $mant_tipo = 'taller';
@@ -42,6 +46,39 @@ class Show extends Component
         
         if ($this->vehiculo->categoria_propiedad->value === 'consignacion' && $this->vehiculo->vendedor_id) {
             $this->vendedor = Cliente::find($this->vehiculo->vendedor_id);
+        }
+
+        $this->loadLegajoVenta();
+    }
+
+    public function loadLegajoVenta()
+    {
+        $this->legajoVenta = \App\Src\CRM\Models\LegajoVehiculo::where('vehiculo_id', $this->vehiculo->id)
+            ->whereHas('legajo', function($q) {
+                $q->where('tipo_legajo', \App\Src\CRM\Enums\TipoLegajo::COMPRADOR->value);
+            })->latest()->first();
+    }
+
+    public function intentarCambiarEntrega()
+    {
+        if ($this->legajoVenta) {
+            if ($this->legajoVenta->saldo_entrega_pendiente <= 0) {
+                $this->isOpenConfirmarEntrega = true;
+            } else {
+                session()->flash('error', 'No se puede cambiar el estado de entrega porque aún hay un saldo pendiente de la entrega mínima requerida.');
+            }
+        }
+    }
+
+    public function confirmarEntrega()
+    {
+        if ($this->legajoVenta && $this->legajoVenta->saldo_entrega_pendiente <= 0) {
+            $this->legajoVenta->entregado = !$this->legajoVenta->entregado;
+            $this->legajoVenta->save();
+            $estado = $this->legajoVenta->entregado ? 'Entregado al Cliente' : 'Recuperado / En Agencia';
+            session()->flash('message', "El estado de la unidad se actualizó a: $estado.");
+            $this->isOpenConfirmarEntrega = false;
+            $this->loadLegajoVenta();
         }
     }
 

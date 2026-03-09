@@ -137,6 +137,84 @@
                             <a href="{{ route('vehicles.edit', $vehiculo->id) }}" wire:navigate class="text-indigo-600 font-bold text-sm hover:underline"><i class="fas fa-edit mr-1"></i> Actualizar Ficha y Precios</a>
                         </div>
                     </div>
+
+                    {{-- Estado Contable Comercial --}}
+                    @if($legajoVenta)
+                        <div class="bg-white shadow rounded-lg overflow-hidden border border-gray-200 mt-8">
+                            <div class="px-4 py-3 bg-blue-50 border-b border-blue-200 text-blue-800">
+                                <h4 class="font-bold"><i class="fas fa-file-invoice-dollar mr-2"></i> Estado Contable y Ventas</h4>
+                            </div>
+                            <div class="p-4 space-y-4">
+                                <div class="text-sm border-b pb-3 mb-3">
+                                    <p class="text-gray-500 font-medium">Cliente (Comprador):</p>
+                                    <p class="font-bold text-gray-800">{{ $legajoVenta->legajo->cliente->nombre ?? '' }} {{ $legajoVenta->legajo->cliente->apellido ?? '' }}</p>
+                                </div>
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-gray-500">Valor de Venta Real:</span>
+                                    <span class="text-gray-900 font-bold">$ {{ number_format($legajoVenta->precio_compra, 2) }}</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-gray-500">Saldo Pendiente Entrega:</span>
+                                    <span class="font-bold {{ $legajoVenta->saldo_entrega_pendiente > 0 ? 'text-red-600' : 'text-green-600' }}">
+                                        $ {{ number_format($legajoVenta->saldo_entrega_pendiente, 2) }}
+                                    </span>
+                                </div>
+                                @if($legajoVenta->saldo_entrega_pendiente > 0)
+                                    <div class="mt-2 text-right">
+                                        <a href="{{ route('crm.show', $legajoVenta->legajo->cliente_id) }}" wire:navigate class="text-xs text-red-600 hover:text-red-800 underline font-bold">
+                                            > Ingresar Abono de Entrega
+                                        </a>
+                                    </div>
+                                @endif
+
+                                @if($legajoVenta->financiacion_casa > 0)
+                                    <div class="mt-4 pt-4 border-t border-gray-100">
+                                        <div class="mb-2">
+                                            <span class="text-xs font-bold text-gray-500 uppercase tracking-widest"><i class="fas fa-handshake mr-1"></i> Crédito de la Casa</span>
+                                        </div>
+                                        <div class="flex justify-between items-center text-sm mb-1">
+                                            <span class="text-gray-500">Monto Total Financiado:</span>
+                                            <span class="font-bold text-gray-800">$ {{ number_format($legajoVenta->financiacion_casa, 2) }}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center text-sm mb-2">
+                                            <span class="text-gray-500">Total Abonado:</span>
+                                            <span class="font-bold text-indigo-600">$ {{ number_format($legajoVenta->total_pagado_casa ?? 0, 2) }}</span>
+                                        </div>
+                                        
+                                        @php
+                                            $totalParaCalcular = $legajoVenta->financiacion_casa ?: 1; // Evitar división por cero
+                                            $pagado = $legajoVenta->total_pagado_casa ?? 0;
+                                            $porcentajePagado = ($pagado / $totalParaCalcular) * 100;
+                                        @endphp
+                                        
+                                        <!-- Barra de progreso -->
+                                        <div class="w-full bg-gray-200 rounded-full h-2 mb-1 shadow-inner overflow-hidden mt-3">
+                                            <div class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: {{ min($porcentajePagado, 100) }}%"></div>
+                                        </div>
+                                        <div class="flex justify-between items-center text-xs text-gray-400 font-bold mb-4">
+                                            <span>{{ number_format($porcentajePagado, 1) }}% Pagado</span>
+                                            <span>$ {{ number_format($legajoVenta->financiacion_casa - $pagado, 2) }} Restantes</span>
+                                        </div>
+                                        
+                                        <a href="{{ route('cobrador.index') }}" wire:navigate class="w-full inline-flex justify-center items-center text-xs bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-bold py-2 rounded transition shadow-sm">
+                                            <i class="fas fa-wallet mr-2"></i> Ir al Panel de Cobranzas
+                                        </a>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="bg-gray-50 px-4 py-3 border-t text-center">
+                                <label class="flex items-center justify-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" 
+                                           class="form-checkbox h-5 w-5 text-indigo-600 transition duration-150 ease-in-out cursor-pointer"
+                                           {{ $legajoVenta->entregado ? 'checked' : '' }}
+                                           wire:click.prevent="intentarCambiarEntrega">
+                                    <span class="text-sm font-bold {{ $legajoVenta->entregado ? 'text-green-700' : 'text-gray-700' }}">
+                                        {{ $legajoVenta->entregado ? 'VEHÍCULO ENTREGADO AL CLIENTE' : 'MARCAR COMO ENTREGADO' }}
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
                 {{-- Columna Derecha: Mantenimientos y Formularios --}}
@@ -380,6 +458,47 @@
                         <button type="button" wire:click="$set('isOpenFormulario', false)" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Cancelar</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- MODAL CONFIRMACION ENTREGA --}}
+    @if($isOpenConfirmarEntrega)
+    <div class="fixed z-10 inset-0 overflow-y-auto ease-out duration-400">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity"><div class="absolute inset-0 bg-gray-500 opacity-75"></div></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen"></span>
+
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full {{ $legajoVenta && $legajoVenta->entregado ? 'bg-yellow-100' : 'bg-green-100' }} sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas {{ $legajoVenta && $legajoVenta->entregado ? 'fa-undo text-yellow-600' : 'fa-check text-green-600' }}"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                {{ $legajoVenta && $legajoVenta->entregado ? 'Revertir Entrega' : 'Confirmar Entrega' }}
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">
+                                    {{ $legajoVenta && $legajoVenta->entregado 
+                                        ? '¿Estás seguro de desmarcar este vehículo como entregado? Volverá a figurar en agencia.'
+                                        : 'Al confirmar esta operación, el vehículo pasará a estar oficialmente en estado ENTREGADO AL CLIENTE.' 
+                                    }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
+                    <button type="button" wire:click="confirmarEntrega" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 {{ $legajoVenta && $legajoVenta->entregado ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-green-600 hover:bg-green-700' }} text-base font-bold text-white sm:ml-3 sm:w-auto sm:text-sm">
+                        Confirmar
+                    </button>
+                    <button type="button" wire:click="$set('isOpenConfirmarEntrega', false)" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancelar
+                    </button>
+                </div>
             </div>
         </div>
     </div>

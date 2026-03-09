@@ -48,6 +48,30 @@ class Show extends Component
             return;
         }
 
+        // Obtener la caja abierta del usuario
+        $caja = \App\Src\POS\Models\Caja::where('usuario_id', auth()->id())
+            ->where('estado', \App\Src\POS\Enums\EstadoCaja::ABIERTA->value)
+            ->first();
+
+        if (!$caja) {
+            session()->flash('error', 'No tienes una caja abierta. Por favor, abre una caja en el módulo Administrativo para registrar este cobro.');
+            return;
+        }
+
+        $metodoCaja = \App\Src\POS\Enums\TipoMetodoPago::EFECTIVO->value;
+        if ($this->pago_entrega_metodo === 'transferencia') {
+            $metodoCaja = \App\Src\POS\Enums\TipoMetodoPago::TRANSFERENCIA->value;
+        }
+
+        // Registrar ingreso en caja
+        \App\Src\POS\Models\MovimientoCaja::create([
+            'caja_id' => $caja->id,
+            'tipo_movimiento' => \App\Src\POS\Enums\TipoMovimiento::INGRESO->value,
+            'metodo_pago' => $metodoCaja,
+            'monto' => $this->pago_entrega_monto,
+            'descripcion' => "Abono Saldo Reserva: Unit. ID {$legajoVehiculo->vehiculo_id} (P/ {$this->pago_entrega_metodo})",
+        ]);
+
         \App\Src\CRM\Models\PagoEntrega::create([
             'legajo_vehiculo_id' => $legajoVehiculo->id,
             'monto' => $this->pago_entrega_monto,
@@ -56,8 +80,21 @@ class Show extends Component
             'registrado_por' => auth()->user() ? auth()->user()->name : 'Admin',
         ]);
 
-        // Reducimos el saldo pendiente
+        // Reducimos el saldo pendiente y aumentamos los montos aportados en LegajoVehiculo
         $legajoVehiculo->saldo_entrega_pendiente -= $this->pago_entrega_monto;
+        
+        switch ($this->pago_entrega_metodo) {
+            case 'efectivo':
+                $legajoVehiculo->monto_efectivo += $this->pago_entrega_monto;
+                break;
+            case 'transferencia':
+                $legajoVehiculo->monto_transferencia += $this->pago_entrega_monto;
+                break;
+            default:
+                $legajoVehiculo->monto_entrega += $this->pago_entrega_monto;
+                break;
+        }
+
         $legajoVehiculo->save();
 
         session()->flash('message', 'Pago registrado y descontado del saldo pendiente.');
@@ -65,6 +102,27 @@ class Show extends Component
         
         // Refrescamos el cliente desde la db para renderizar
         $this->mount($this->cliente->id);
+    }
+
+    public function toggleEntregado($legajoVehiculoId)
+    {
+        $legajoVehiculo = \App\Src\CRM\Models\LegajoVehiculo::find($legajoVehiculoId);
+        
+        if ($legajoVehiculo) {
+            if ($legajoVehiculo->saldo_entrega_pendiente <= 0) {
+                // Hacer el toggle del estado
+                $legajoVehiculo->entregado = !$legajoVehiculo->entregado;
+                $legajoVehiculo->save();
+                
+                // Refrescar el estado del componente
+                $this->mount($this->cliente->id);
+                
+                $estado = $legajoVehiculo->entregado ? 'Entregado' : 'No entregado';
+                session()->flash('message', "El estado del vehículo se actualizó a: $estado.");
+            } else {
+                session()->flash('error', 'No se puede marcar como entregado porque aún hay un saldo pendiente de la entrega mínima requerida.');
+            }
+        }
     }
 
     public function render()
